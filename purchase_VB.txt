@@ -1,0 +1,36 @@
+Sub PurchaseEntry()
+
+    Dim wsMain As Worksheet
+    Dim wsPurchase As Worksheet
+    Dim nextRow As Long
+    Dim currentRow As Long
+
+    ' Update these names to match your actual sheet names
+    On Error GoTo SheetError
+    Set wsMain = ThisWorkbook.Sheets("Main Sheet")
+    Set wsPurchase = ThisWorkbook.Sheets("Purchase Sheet")
+    On Error GoTo 0
+
+    ' Start checking from row 6 downward
+    currentRow = 6
+    Do While wsPurchase.Cells(currentRow, 3).Value <> ""
+        currentRow = currentRow + 1
+    Loop
+    nextRow = currentRow
+
+    ' Copy values from main sheet to purchase sheet
+    wsPurchase.Cells(nextRow, 3).Value = wsMain.Range("E8").Value   ' Date
+    wsPurchase.Cells(nextRow, 4).Value = wsMain.Range("E9").Value   ' Item Code
+    wsPurchase.Cells(nextRow, 5).Value = wsMain.Range("E10").Value  ' Item Name
+    wsPurchase.Cells(nextRow, 6).Value = wsMain.Range("E11").Value  ' Item Price
+    wsPurchase.Cells(nextRow, 7).Value = wsMain.Range("E12").Value  ' Quantity
+    wsPurchase.Cells(nextRow, 8).Value = wsMain.Range("E13").Value  ' Amount
+
+    MsgBox "Purchase data added to row " & nextRow & " successfully!", vbInformation
+    Exit Sub
+
+SheetError:
+    MsgBox "One or more sheets are missing. Please check sheet names.", vbCritical
+
+End Sub
+

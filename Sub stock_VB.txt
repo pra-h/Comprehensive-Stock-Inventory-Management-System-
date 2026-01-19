@@ -1,0 +1,20 @@
+Sub stock()
+'
+' stock Macro
+'
+
+'
+    ActiveWindow.SmallScroll ToRight:=-12
+    Range("E5,F5").Select
+    Range("Table3[[#Headers],[Purchase Qty]]").Activate
+    Application.CutCopyMode = False
+    Range("F5,E5").Select
+    Range("Table3[[#Headers],[Item Name]]").Activate
+    Application.CutCopyMode = False
+    Application.CutCopyMode = False
+    Application.CutCopyMode = False
+    Application.CutCopyMode = False
+    Sheets("purchase sheet").Range("Table16[[#All],[Item Name]]").AdvancedFilter _
+        Action:=xlFilterCopy, CopyToRange:=Range("Table3[[#Headers],[Item Name]]") _
+        , Unique:=True
+End Sub

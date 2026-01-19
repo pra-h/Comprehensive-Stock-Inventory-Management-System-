@@ -1,0 +1,89 @@
+Sub SalesEntry()
+
+    Dim wsMain As Worksheet
+    Dim wsPurchase As Worksheet
+    Dim wsSales As Worksheet
+    Dim itemCode As String, itemName As String
+    Dim itemQty As Double, itemPrice As Double, itemAmount As Double
+    Dim foundRow As Long, i As Long, lastRow As Long
+    Dim matchFound As Boolean
+    Dim availableQty As Double, purchasePrice As Double, purchaseAmount As Double
+    Dim salesNextRow As Long
+
+    ' Setup worksheet references
+    On Error GoTo SheetError
+    Set wsMain = ThisWorkbook.Sheets("Main Sheet")
+    Set wsPurchase = ThisWorkbook.Sheets("Purchase Sheet")
+    Set wsSales = ThisWorkbook.Sheets("Sales Sheet")
+    On Error GoTo 0
+
+    ' Read values from Main Sheet
+    itemCode = Trim(wsMain.Range("E9").Value)
+    itemName = LCase(Trim(wsMain.Range("E10").Value))
+    itemQty = Val(wsMain.Range("E12").Value)
+    itemPrice = Val(wsMain.Range("E11").Value)
+    itemAmount = Val(wsMain.Range("E13").Value)
+
+    ' Find matching item in Purchase Sheet
+    matchFound = False
+    lastRow = wsPurchase.Cells(wsPurchase.Rows.Count, 4).End(xlUp).Row
+
+    For i = 6 To lastRow
+        If Trim(CStr(wsPurchase.Cells(i, 4).Value)) = itemCode And _
+           LCase(Trim(wsPurchase.Cells(i, 5).Value)) = itemName Then
+            matchFound = True
+            foundRow = i
+            Exit For
+        End If
+    Next i
+
+    If Not matchFound Then
+        MsgBox "Item not found in Purchase Sheet. Please verify Item Code and Name.", vbExclamation
+        Exit Sub
+    End If
+
+    ' Read stock data from Purchase Sheet
+    purchasePrice = wsPurchase.Cells(foundRow, 6).Value
+    availableQty = wsPurchase.Cells(foundRow, 7).Value
+    purchaseAmount = wsPurchase.Cells(foundRow, 8).Value
+
+    ' Validation checks
+    If itemPrice <> purchasePrice Then
+        MsgBox "Item Price mismatch. Purchase Price: " & purchasePrice & ", Entered: " & itemPrice, vbExclamation
+        Exit Sub
+    End If
+
+    If itemQty > availableQty Then
+        MsgBox "Insufficient stock. Available: " & availableQty & ", Requested: " & itemQty, vbExclamation
+        Exit Sub
+    End If
+
+    If itemAmount > purchaseAmount Then
+        MsgBox "Entered Amount exceeds stock value. Available: " & purchaseAmount & ", Entered: " & itemAmount, vbExclamation
+        Exit Sub
+    End If
+
+    ' Find next empty row in Sales Sheet
+    salesNextRow = 6
+    Do While wsSales.Cells(salesNextRow, 3).Value <> ""
+        salesNextRow = salesNextRow + 1
+    Loop
+
+    ' Add sale to Sales Sheet
+    wsSales.Cells(salesNextRow, 3).Value = wsMain.Range("E8").Value   ' Date
+    wsSales.Cells(salesNextRow, 4).NumberFormat = "@"
+    wsSales.Cells(salesNextRow, 4).Value = "'" & itemCode
+    wsSales.Cells(salesNextRow, 5).Value = itemName
+    wsSales.Cells(salesNextRow, 6).Value = itemPrice
+    wsSales.Cells(salesNextRow, 7).Value = itemQty
+    wsSales.Cells(salesNextRow, 8).Value = itemAmount
+
+    MsgBox "Sales entry recorded successfully.", vbInformation
+    Exit Sub
+
+SheetError:
+    MsgBox "One or more required sheets are missing. Please check sheet names.", vbCritical
+
+End Sub
+
+
